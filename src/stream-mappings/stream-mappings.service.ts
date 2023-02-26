@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { groupBy, sortBy } from 'lodash';
 
 // Server-side representation of a stream mapping
 export type StreamMapping = {
@@ -10,6 +11,11 @@ export type StreamMapping = {
   stream_id: string;
   author_id: string;
   created_at: Date;
+};
+
+export type StreamIdWithScore = {
+  stream_id: string;
+  score: number;
 };
 
 @Injectable()
@@ -40,5 +46,32 @@ export class StreamMappingsService {
     } else {
       throw error;
     }
+  }
+
+  async findTopStream(
+    artist: string,
+    title: string,
+    source: 'Youtube',
+  ): Promise<StreamIdWithScore | null> {
+    const streamMappings = await this.findAllByArtistTitleAndSource(
+      artist,
+      title,
+      source,
+    );
+
+    if (streamMappings.length === 0) {
+      return null;
+    }
+
+    const groupedStreams = groupBy(streamMappings, 'stream_id');
+
+    const streamIdsWithScores = Object.entries(groupedStreams).map(
+      ([stream_id, streamMappings]) => ({
+        stream_id,
+        score: streamMappings.length,
+      }),
+    );
+
+    return sortBy(streamIdsWithScores, 'score').reverse()[0];
   }
 }

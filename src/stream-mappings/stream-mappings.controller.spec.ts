@@ -32,14 +32,14 @@ describe('StreamMappingsController', () => {
         new StreamMappingBuilder().withAuthorId('another-autor').build(),
         new StreamMappingBuilder().withAuthorId('yet-another-autor').build(),
       ],
-      'test artist',
-      'test title',
+      'Test Sabbath',
+      'Test Pigs',
       'Youtube',
     );
 
     const result = await controller.findAllByArtistTitleAndSource(
-      'test artist',
-      'test title',
+      'Test Sabbath',
+      'Test Pigs',
       'Youtube',
     );
 
@@ -47,23 +47,51 @@ describe('StreamMappingsController', () => {
     expect(result).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          artist: 'test artist',
-          title: 'test title',
+          artist: 'Test Sabbath',
+          title: 'Test Pigs',
           source: 'Youtube',
         }),
         expect.objectContaining({
-          artist: 'test artist',
-          title: 'test title',
+          artist: 'Test Sabbath',
+          title: 'Test Pigs',
           source: 'Youtube',
           author_id: 'another-autor',
         }),
         expect.objectContaining({
-          artist: 'test artist',
-          title: 'test title',
+          artist: 'Test Sabbath',
+          title: 'Test Pigs',
           source: 'Youtube',
           author_id: 'yet-another-autor',
         }),
       ]),
     );
+  });
+
+  it('should return the top stream and its score for a given artist, title, and source combination', async () => {
+    SupabaseMock.streamMappings.findAll(
+      [
+        new StreamMappingBuilder().build(),
+        new StreamMappingBuilder().withAuthorId('another-author').build(),
+        new StreamMappingBuilder().withAuthorId('another-author-2').build(),
+        new StreamMappingBuilder()
+          .withStreamId('another-stream-id')
+          .withAuthorId('another-author-3')
+          .build(),
+      ],
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    const result = await controller.findTopStream(
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    expect(result).toEqual({
+      stream_id: 'test-stream-id',
+      score: 3,
+    });
   });
 });

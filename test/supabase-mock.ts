@@ -23,6 +23,11 @@ export class StreamMappingBuilder {
     return this;
   }
 
+  withStreamId(stream_id: string) {
+    this.#stream_id = stream_id;
+    return this;
+  }
+
   withAuthorId(author_id: string) {
     this.#author_id = author_id;
     return this;
@@ -50,7 +55,7 @@ export const SupabaseMock = {
       source: StreamMapping['source'],
     ) =>
       nock(SupabaseUrl)
-        .get('/rest/v1/stream_mappings')
+        .get('/rest/v1/stream-mappings')
         .query({
           select: '*',
           artist: `eq.${artist}`,

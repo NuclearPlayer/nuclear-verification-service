@@ -19,4 +19,8 @@ export class StreamMappingsController {
       source,
     );
   }
+
+  async findTopStream(artist: string, title: string, source: 'Youtube') {
+    return this.streamMappingsService.findTopStream(artist, title, source);
+  }
 }
