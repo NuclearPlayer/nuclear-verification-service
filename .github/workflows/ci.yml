@@ -7,9 +7,9 @@ jobs:
   linux_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@latest
       - name: Use latest Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@latest
         with:
           node-version: latest
           cache: npm
