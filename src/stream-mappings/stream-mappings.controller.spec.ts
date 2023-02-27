@@ -94,4 +94,57 @@ describe('StreamMappingsController', () => {
       score: 3,
     });
   });
+
+  it('for a given user id, source, artist, and title, it should say whether that user has already verified this track', async () => {
+    SupabaseMock.streamMappings.findAll(
+      [
+        new StreamMappingBuilder().build(),
+        new StreamMappingBuilder().withAuthorId('another-author').build(),
+        new StreamMappingBuilder().withAuthorId('another-author-2').build(),
+        new StreamMappingBuilder()
+          .withStreamId('another-stream-id')
+          .withAuthorId('another-author-3')
+          .build(),
+      ],
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    const result = await controller.isVerifiedByUser(
+      'another-author-2',
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    expect(result).toEqual(true);
+  });
+
+  it('should verify a track for a given user id, source, artist, and title', async () => {
+    const timestamp = new Date().toISOString();
+    SupabaseMock.streamMappings.post(
+      new StreamMappingBuilder().build(),
+      'test-id',
+      timestamp,
+    );
+
+    const result = await controller.verifyTrack({
+      author_id: 'test-author-id',
+      artist: 'Test Sabbath',
+      title: 'Test Pigs',
+      source: 'Youtube',
+      stream_id: 'test-stream-id',
+    });
+
+    expect(result).toEqual({
+      id: 'test-id',
+      artist: 'Test Sabbath',
+      title: 'Test Pigs',
+      source: 'Youtube',
+      stream_id: 'test-stream-id',
+      author_id: 'test-author-id',
+      created_at: timestamp,
+    });
+  });
 });

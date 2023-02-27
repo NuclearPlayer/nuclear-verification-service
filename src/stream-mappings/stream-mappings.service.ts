@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { groupBy, sortBy } from 'lodash';
+import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
 
 // Server-side representation of a stream mapping
 export type StreamMapping = {
@@ -73,5 +74,37 @@ export class StreamMappingsService {
     );
 
     return sortBy(streamIdsWithScores, 'score').reverse()[0];
+  }
+
+  async isVerifiedByUser(
+    author_id: string,
+    artist: string,
+    title: string,
+    source: 'Youtube',
+  ): Promise<boolean> {
+    const streamMappings = await this.findAllByArtistTitleAndSource(
+      artist,
+      title,
+      source,
+    );
+
+    return streamMappings.some(
+      (streamMapping) => streamMapping.author_id === author_id,
+    );
+  }
+
+  async verifyTrack(
+    createStreamMappingDto: CreateStreamMappingDto,
+  ): Promise<StreamMapping> {
+    const { data, error } = await this.client
+      .from('stream-mappings')
+      .insert([createStreamMappingDto])
+      .single();
+
+    if (data) {
+      return data[0] as StreamMapping;
+    } else {
+      throw error;
+    }
   }
 }

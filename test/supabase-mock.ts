@@ -1,4 +1,6 @@
+import { matches } from 'lodash';
 import * as nock from 'nock';
+import { CreateStreamMappingDto } from 'src/stream-mappings/dto/create-stream-mapping.dto';
 
 import { StreamMapping } from 'src/stream-mappings/stream-mappings.service';
 
@@ -63,5 +65,24 @@ export const SupabaseMock = {
           source: `eq.${source}`,
         })
         .reply(200, streamMappings),
+    post: (
+      createStreamMappingDto: CreateStreamMappingDto,
+      id: string,
+      created_at: string,
+    ) =>
+      nock(SupabaseUrl)
+        .post('/rest/v1/stream-mappings', (body) =>
+          matches(body[0])(createStreamMappingDto),
+        )
+        .query({
+          columns: '"author_id","artist","title","source","stream_id"',
+        })
+        .reply(200, [
+          {
+            ...createStreamMappingDto,
+            id,
+            created_at,
+          },
+        ]),
   },
 };
