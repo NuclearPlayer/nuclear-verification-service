@@ -25,8 +25,8 @@ export class StreamMappingsService {
 
   constructor() {
     this.client = new SupabaseClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_KEY,
+      process.env.SUPABASE_URL ?? '',
+      process.env.SUPABASE_KEY ?? '',
     );
   }
 
@@ -66,12 +66,12 @@ export class StreamMappingsService {
 
     const groupedStreams = groupBy(streamMappings, 'stream_id');
 
-    const streamIdsWithScores = Object.entries(groupedStreams).map(
-      ([stream_id, streamMappings]) => ({
-        stream_id,
-        score: streamMappings.length,
-      }),
-    );
+    const streamIdsWithScores = Object.entries<StreamMapping[]>(
+      groupedStreams,
+    ).map(([stream_id, streamMappings]) => ({
+      stream_id,
+      score: streamMappings.length,
+    }));
 
     return sortBy(streamIdsWithScores, 'score').reverse()[0];
   }
