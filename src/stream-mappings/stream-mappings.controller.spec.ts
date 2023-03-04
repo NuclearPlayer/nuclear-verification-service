@@ -37,11 +37,11 @@ describe('StreamMappingsController', () => {
       'Youtube',
     );
 
-    const result = await controller.findAllByArtistTitleAndSource(
-      'Test Sabbath',
-      'Test Pigs',
-      'Youtube',
-    );
+    const result = await controller.findAllByArtistTitleAndSource({
+      artist: 'Test Sabbath',
+      title: 'Test Pigs',
+      source: 'Youtube',
+    });
 
     expect(result).toHaveLength(3);
     expect(result).toEqual(
@@ -83,11 +83,11 @@ describe('StreamMappingsController', () => {
       'Youtube',
     );
 
-    const result = await controller.findTopStream(
-      'Test Sabbath',
-      'Test Pigs',
-      'Youtube',
-    );
+    const result = await controller.findTopStream({
+      artist: 'Test Sabbath',
+      title: 'Test Pigs',
+      source: 'Youtube',
+    });
 
     expect(result).toEqual({
       stream_id: 'test-stream-id',
@@ -111,40 +111,13 @@ describe('StreamMappingsController', () => {
       'Youtube',
     );
 
-    const result = await controller.isVerifiedByUser(
-      'another-author-2',
-      'Test Sabbath',
-      'Test Pigs',
-      'Youtube',
-    );
-
-    expect(result).toEqual(true);
-  });
-
-  it('should verify a track for a given user id, source, artist, and title', async () => {
-    const timestamp = new Date().toISOString();
-    SupabaseMock.streamMappings.post(
-      new StreamMappingBuilder().build(),
-      'test-id',
-      timestamp,
-    );
-
-    const result = await controller.verifyTrack({
-      author_id: 'test-author-id',
+    const result = await controller.isVerifiedBy({
+      author_id: 'another-author-2',
       artist: 'Test Sabbath',
       title: 'Test Pigs',
       source: 'Youtube',
-      stream_id: 'test-stream-id',
     });
 
-    expect(result).toEqual({
-      id: 'test-id',
-      artist: 'Test Sabbath',
-      title: 'Test Pigs',
-      source: 'Youtube',
-      stream_id: 'test-stream-id',
-      author_id: 'test-author-id',
-      created_at: timestamp,
-    });
+    expect(result).toEqual({ result: true });
   });
 });

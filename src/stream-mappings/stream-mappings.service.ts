@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { groupBy, sortBy } from 'lodash';
 import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
@@ -81,30 +81,33 @@ export class StreamMappingsService {
     artist: string,
     title: string,
     source: 'Youtube',
-  ): Promise<boolean> {
+  ): Promise<{ result: boolean }> {
     const streamMappings = await this.findAllByArtistTitleAndSource(
       artist,
       title,
       source,
     );
 
-    return streamMappings.some(
-      (streamMapping) => streamMapping.author_id === author_id,
-    );
+    return {
+      result: streamMappings.some(
+        (streamMapping) => streamMapping.author_id === author_id,
+      ),
+    };
   }
 
   async verifyTrack(
     createStreamMappingDto: CreateStreamMappingDto,
-  ): Promise<StreamMapping> {
-    const { data, error } = await this.client
+  ): Promise<void> {
+    const { error } = await this.client
       .from('stream-mappings')
       .insert([createStreamMappingDto])
       .single();
 
-    if (data) {
-      return data[0] as StreamMapping;
-    } else {
+    if (error) {
+      Logger.error('Error verifying track', createStreamMappingDto, error);
       throw error;
     }
+
+    return;
   }
 }
