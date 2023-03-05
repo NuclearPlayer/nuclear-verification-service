@@ -6,14 +6,7 @@ import { StreamMappingsModule } from './stream-mappings/stream-mappings.module';
 import { StreamMappingsService } from './stream-mappings/stream-mappings.service';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
-    StreamMappingsModule,
-  ],
+  imports: [ConfigModule.forRoot(), StreamMappingsModule],
   controllers: [StreamMappingsController],
   providers: [StreamMappingsService],
 })
