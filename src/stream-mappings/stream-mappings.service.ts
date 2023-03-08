@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { groupBy, sortBy } from 'lodash';
 import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
+import { DeleteStreamMappingDto } from './dto/delete-stream-maping.dto';
 
 // Server-side representation of a stream mapping
 export type StreamMapping = {
@@ -30,7 +31,7 @@ export class StreamMappingsService {
     );
   }
 
-  async findAllByArtistTitleAndSource(
+  private async findAllByArtistTitleAndSource(
     artist: string,
     title: string,
     source: 'Youtube',
@@ -105,6 +106,25 @@ export class StreamMappingsService {
 
     if (error) {
       Logger.error('Error verifying track', createStreamMappingDto, error);
+      throw error;
+    }
+
+    return;
+  }
+
+  async unverifyTrack(
+    deleteStreamMappingDto: DeleteStreamMappingDto,
+  ): Promise<void> {
+    const { error } = await this.client
+      .from('stream-mappings')
+      .delete()
+      .eq('artist', deleteStreamMappingDto.artist)
+      .eq('title', deleteStreamMappingDto.title)
+      .eq('source', deleteStreamMappingDto.source)
+      .eq('author_id', deleteStreamMappingDto.author_id);
+
+    if (error) {
+      Logger.error('Error unverifying track', deleteStreamMappingDto, error);
       throw error;
     }
 

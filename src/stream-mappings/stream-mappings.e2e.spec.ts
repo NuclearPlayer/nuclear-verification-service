@@ -24,28 +24,6 @@ describe('Stream mappings - E2E tests', () => {
     expect(app).toBeDefined();
   });
 
-  it('should return all stream mappings for a given artist, title, and source combination', async () => {
-    SupabaseMock.streamMappings.findAll(
-      [
-        new StreamMappingBuilder().build(),
-        new StreamMappingBuilder().withAuthorId('another-autor').build(),
-        new StreamMappingBuilder().withAuthorId('yet-another-autor').build(),
-      ],
-      'Test Sabbath',
-      'Test Pigs',
-      'Youtube',
-    );
-
-    return request(app.getHttpServer())
-      .post('/stream-mappings/find-all')
-      .send({
-        artist: 'Test Sabbath',
-        title: 'Test Pigs',
-        source: 'Youtube',
-      })
-      .expect(200);
-  });
-
   it('should validate verification requests', async () => {
     return request(app.getHttpServer())
       .post('/stream-mappings/verify')

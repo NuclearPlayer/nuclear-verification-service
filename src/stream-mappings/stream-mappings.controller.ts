@@ -1,15 +1,16 @@
-import { Body, Controller, Get, HttpCode, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  Inject,
+  Post,
+} from '@nestjs/common';
 import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
 import {
   StreamMapping,
   StreamMappingsService,
 } from './stream-mappings.service';
-
-type FindAllByArtistTitleAndSourceBody = {
-  artist: string;
-  title: string;
-  source: StreamMapping['source'];
-};
 
 type FindTopStreamBody = {
   artist: string;
@@ -30,18 +31,6 @@ export class StreamMappingsController {
     @Inject(StreamMappingsService)
     private streamMappingsService: StreamMappingsService,
   ) {}
-
-  @HttpCode(200)
-  @Post('find-all')
-  async findAllByArtistTitleAndSource(
-    @Body() { artist, title, source }: FindAllByArtistTitleAndSourceBody,
-  ) {
-    return this.streamMappingsService.findAllByArtistTitleAndSource(
-      artist,
-      title,
-      source,
-    );
-  }
 
   @HttpCode(200)
   @Post('top-stream')
@@ -66,5 +55,11 @@ export class StreamMappingsController {
   @Post('verify')
   async verifyTrack(@Body() createStreamMappingDto: CreateStreamMappingDto) {
     return this.streamMappingsService.verifyTrack(createStreamMappingDto);
+  }
+
+  @HttpCode(200)
+  @Delete('unverify')
+  async unverifyTrack(@Body() createStreamMappingDto: CreateStreamMappingDto) {
+    return this.streamMappingsService.unverifyTrack(createStreamMappingDto);
   }
 }
