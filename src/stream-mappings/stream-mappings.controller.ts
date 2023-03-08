@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   HttpCode,
+  HttpException,
+  HttpStatus,
   Inject,
   Post,
 } from '@nestjs/common';
@@ -35,7 +37,17 @@ export class StreamMappingsController {
   @HttpCode(200)
   @Post('top-stream')
   async findTopStream(@Body() { artist, title, source }: FindTopStreamBody) {
-    return this.streamMappingsService.findTopStream(artist, title, source);
+    const result = await this.streamMappingsService.findTopStream(
+      artist,
+      title,
+      source,
+    );
+
+    if (result) {
+      return result;
+    }
+
+    throw new HttpException('No streams found', HttpStatus.NOT_FOUND);
   }
 
   @HttpCode(200)

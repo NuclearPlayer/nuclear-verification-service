@@ -24,6 +24,24 @@ describe('Stream mappings - E2E tests', () => {
     expect(app).toBeDefined();
   });
 
+  it('should return 404 if there are no mappings for a given track', async () => {
+    SupabaseMock.streamMappings.findAll(
+      [],
+      'Test artist',
+      'Test title',
+      'Youtube',
+    );
+
+    return request(app.getHttpServer())
+      .post('/stream-mappings/top-stream')
+      .send({
+        artist: 'Test artist',
+        title: 'Test title',
+        source: 'Youtube',
+      })
+      .expect(404);
+  });
+
   it('should validate verification requests', async () => {
     return request(app.getHttpServer())
       .post('/stream-mappings/verify')
