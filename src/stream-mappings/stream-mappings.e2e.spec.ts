@@ -60,6 +60,64 @@ describe('Stream mappings - E2E tests', () => {
       });
   });
 
+  it('should return the top stream and its score for a given artist, title, and source combination', async () => {
+    SupabaseMock.streamMappings.findAll(
+      [
+        new StreamMappingBuilder().build(),
+        new StreamMappingBuilder().withAuthorId('another-author').build(),
+        new StreamMappingBuilder().withAuthorId('another-author-2').build(),
+        new StreamMappingBuilder()
+          .withStreamId('another-stream-id')
+          .withAuthorId('another-author-3')
+          .build(),
+      ],
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    return request(app.getHttpServer())
+      .post('/stream-mappings/top-stream')
+      .send({
+        artist: 'Test Sabbath',
+        title: 'Test Pigs',
+        source: 'Youtube',
+      })
+      .expect(200, {
+        stream_id: 'test-stream-id',
+        score: 3,
+      });
+  });
+
+  it('should return the stream the user has previously verified even if there are other streams with higher score', async () => {
+    SupabaseMock.streamMappings.findAll(
+      [
+        new StreamMappingBuilder().build(),
+        new StreamMappingBuilder().withAuthorId('another-author').build(),
+        new StreamMappingBuilder()
+          .withStreamId('my-stream-id')
+          .withAuthorId('my-author-id')
+          .build(),
+      ],
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+    );
+
+    return request(app.getHttpServer())
+      .post('/stream-mappings/top-stream')
+      .send({
+        artist: 'Test Sabbath',
+        title: 'Test Pigs',
+        source: 'Youtube',
+        author_id: 'my-author-id',
+      })
+      .expect(200, {
+        stream_id: 'my-stream-id',
+        score: 1,
+      });
+  });
+
   it('should verify a track', async () => {
     const timestamp = new Date().toISOString();
     SupabaseMock.streamMappings.post(
@@ -78,6 +136,20 @@ describe('Stream mappings - E2E tests', () => {
         stream_id: 'test-stream-id',
       })
       .expect(201);
+  });
+
+  it('should unverify a track', async () => {
+    SupabaseMock.streamMappings.delete(new StreamMappingBuilder().build());
+
+    await request(app.getHttpServer())
+      .delete('/stream-mappings/unverify')
+      .send({
+        author_id: 'test-author-id',
+        artist: 'Test Sabbath',
+        title: 'Test Pigs',
+        source: 'Youtube',
+      })
+      .expect(200);
   });
 });
 

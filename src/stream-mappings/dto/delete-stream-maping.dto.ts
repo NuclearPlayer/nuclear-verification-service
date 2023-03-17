@@ -1,4 +1,5 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { StreamMapping } from '../stream-mappings.service';
 
 export class DeleteStreamMappingDto {
   @IsNotEmpty()
@@ -8,7 +9,10 @@ export class DeleteStreamMappingDto {
   title: string;
 
   @IsNotEmpty()
-  source: string;
+  @IsEnum({
+    Youtube: 'Youtube',
+  })
+  source: StreamMapping['source'];
 
   @IsNotEmpty()
   author_id: string;

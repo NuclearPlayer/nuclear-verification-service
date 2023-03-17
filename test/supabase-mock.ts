@@ -1,6 +1,7 @@
 import { matches } from 'lodash';
 import * as nock from 'nock';
 import { CreateStreamMappingDto } from 'src/stream-mappings/dto/create-stream-mapping.dto';
+import { DeleteStreamMappingDto } from 'src/stream-mappings/dto/delete-stream-maping.dto';
 
 import { StreamMapping } from 'src/stream-mappings/stream-mappings.service';
 
@@ -84,5 +85,17 @@ export const SupabaseMock = {
             created_at,
           },
         ]),
+    delete: (deleteStreamMappingDto: DeleteStreamMappingDto) =>
+      nock(SupabaseUrl)
+        .delete('/rest/v1/stream-mappings', (body) =>
+          matches(body[0])(deleteStreamMappingDto),
+        )
+        .query({
+          artist: `eq.${deleteStreamMappingDto.artist}`,
+          title: `eq.${deleteStreamMappingDto.title}`,
+          source: `eq.${deleteStreamMappingDto.source}`,
+          author_id: `eq.${deleteStreamMappingDto.author_id}`,
+        })
+        .reply(200),
   },
 };

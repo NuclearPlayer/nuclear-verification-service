@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
+import { DeleteStreamMappingDto } from './dto/delete-stream-maping.dto';
 import {
   StreamMapping,
   StreamMappingsService,
@@ -18,13 +19,7 @@ type FindTopStreamBody = {
   artist: string;
   title: string;
   source: StreamMapping['source'];
-};
-
-type IsVerifiedByUserBody = {
-  author_id: string;
-  artist: string;
-  title: string;
-  source: StreamMapping['source'];
+  author_id?: string;
 };
 
 @Controller('stream-mappings')
@@ -36,11 +31,14 @@ export class StreamMappingsController {
 
   @HttpCode(200)
   @Post('top-stream')
-  async findTopStream(@Body() { artist, title, source }: FindTopStreamBody) {
+  async findTopStream(
+    @Body() { artist, title, source, author_id }: FindTopStreamBody,
+  ) {
     const result = await this.streamMappingsService.findTopStream(
       artist,
       title,
       source,
+      author_id,
     );
 
     if (result) {
@@ -48,19 +46,6 @@ export class StreamMappingsController {
     }
 
     throw new HttpException('No streams found', HttpStatus.NOT_FOUND);
-  }
-
-  @HttpCode(200)
-  @Post('is-verified-by')
-  async isVerifiedBy(
-    @Body() { author_id, artist, title, source }: IsVerifiedByUserBody,
-  ) {
-    return this.streamMappingsService.isVerifiedByUser(
-      author_id,
-      artist,
-      title,
-      source,
-    );
   }
 
   @HttpCode(201)
@@ -71,7 +56,7 @@ export class StreamMappingsController {
 
   @HttpCode(200)
   @Delete('unverify')
-  async unverifyTrack(@Body() createStreamMappingDto: CreateStreamMappingDto) {
-    return this.streamMappingsService.unverifyTrack(createStreamMappingDto);
+  async unverifyTrack(@Body() deleteStreamMappingDto: DeleteStreamMappingDto) {
+    return this.streamMappingsService.unverifyTrack(deleteStreamMappingDto);
   }
 }

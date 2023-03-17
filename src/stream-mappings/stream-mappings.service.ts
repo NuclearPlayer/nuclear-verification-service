@@ -54,6 +54,7 @@ export class StreamMappingsService {
     artist: string,
     title: string,
     source: 'Youtube',
+    author_id?: string,
   ): Promise<StreamIdWithScore | null> {
     const streamMappings = await this.findAllByArtistTitleAndSource(
       artist,
@@ -74,26 +75,17 @@ export class StreamMappingsService {
       score: streamMappings.length,
     }));
 
-    return sortBy(streamIdsWithScores, 'score').reverse()[0];
-  }
-
-  async isVerifiedByUser(
-    author_id: string,
-    artist: string,
-    title: string,
-    source: 'Youtube',
-  ): Promise<{ result: boolean }> {
-    const streamMappings = await this.findAllByArtistTitleAndSource(
-      artist,
-      title,
-      source,
+    const verifiedByCurrentUser = streamMappings.find(
+      (streamMapping) => streamMapping.author_id === author_id,
     );
-
-    return {
-      result: streamMappings.some(
-        (streamMapping) => streamMapping.author_id === author_id,
-      ),
-    };
+    if (verifiedByCurrentUser) {
+      return streamIdsWithScores.find(
+        (streamIdWithScore) =>
+          streamIdWithScore.stream_id === verifiedByCurrentUser.stream_id,
+      ) as StreamIdWithScore;
+    } else {
+      return sortBy(streamIdsWithScores, 'score').reverse()[0];
+    }
   }
 
   async verifyTrack(
