@@ -18,6 +18,7 @@ export type StreamMapping = {
 export type StreamIdWithScore = {
   stream_id: string;
   score: number;
+  self_verified?: boolean;
 };
 
 @Injectable()
@@ -79,10 +80,13 @@ export class StreamMappingsService {
       (streamMapping) => streamMapping.author_id === author_id,
     );
     if (verifiedByCurrentUser) {
-      return streamIdsWithScores.find(
-        (streamIdWithScore) =>
-          streamIdWithScore.stream_id === verifiedByCurrentUser.stream_id,
-      ) as StreamIdWithScore;
+      return {
+        ...(streamIdsWithScores.find(
+          (streamIdWithScore) =>
+            streamIdWithScore.stream_id === verifiedByCurrentUser.stream_id,
+        ) as StreamIdWithScore),
+        self_verified: true,
+      };
     } else {
       return sortBy(streamIdsWithScores, 'score').reverse()[0];
     }

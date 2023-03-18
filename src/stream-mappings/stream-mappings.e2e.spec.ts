@@ -115,6 +115,7 @@ describe('Stream mappings - E2E tests', () => {
       .expect(200, {
         stream_id: 'my-stream-id',
         score: 1,
+        self_verified: true,
       });
   });
 
