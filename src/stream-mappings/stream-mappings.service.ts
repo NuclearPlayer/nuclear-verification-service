@@ -46,8 +46,33 @@ export class StreamMappingsService {
 
     if (data) {
       return data as StreamMapping[];
-    } else {
+    } else if (error) {
       throw error;
+    } else {
+      return [];
+    }
+  }
+
+  private async findByTrackAndAuthor(
+    artist: string,
+    title: string,
+    source: 'Youtube',
+    author_id: string,
+  ): Promise<StreamMapping | null> {
+    const { data, error } = await this.client
+      .from('stream-mappings')
+      .select('*')
+      .eq('artist', artist)
+      .eq('title', title)
+      .eq('source', source)
+      .eq('author_id', author_id);
+
+    if (data) {
+      return data[0] as StreamMapping;
+    } else if (error) {
+      throw error;
+    } else {
+      return null;
     }
   }
 
@@ -79,6 +104,7 @@ export class StreamMappingsService {
     const verifiedByCurrentUser = streamMappings.find(
       (streamMapping) => streamMapping.author_id === author_id,
     );
+
     if (verifiedByCurrentUser) {
       return {
         ...(streamIdsWithScores.find(
@@ -95,10 +121,29 @@ export class StreamMappingsService {
   async verifyTrack(
     createStreamMappingDto: CreateStreamMappingDto,
   ): Promise<void> {
-    const { error } = await this.client
-      .from('stream-mappings')
-      .insert([createStreamMappingDto])
-      .single();
+    const existingStreamMapping = await this.findByTrackAndAuthor(
+      createStreamMappingDto.artist,
+      createStreamMappingDto.title,
+      createStreamMappingDto.source,
+      createStreamMappingDto.author_id,
+    );
+
+    let error;
+    if (existingStreamMapping) {
+      const result = await this.client
+        .from('stream-mappings')
+        .update({
+          stream_id: createStreamMappingDto.stream_id,
+        })
+        .eq('id', existingStreamMapping.id);
+      error = result.error;
+    } else {
+      const result = await this.client
+        .from('stream-mappings')
+        .insert([createStreamMappingDto])
+        .single();
+      error = result.error;
+    }
 
     if (error) {
       Logger.error('Error verifying track', createStreamMappingDto, error);

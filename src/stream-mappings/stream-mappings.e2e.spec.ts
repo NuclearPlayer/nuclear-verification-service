@@ -119,8 +119,14 @@ describe('Stream mappings - E2E tests', () => {
       });
   });
 
-  it('should verify a track', async () => {
+  it('should verify a new track', async () => {
     const timestamp = new Date().toISOString();
+    SupabaseMock.streamMappings.findByTrackAndAuthor404(
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+      'test-author-id',
+    );
     SupabaseMock.streamMappings.post(
       new StreamMappingBuilder().build(),
       'test-id',
@@ -135,6 +141,33 @@ describe('Stream mappings - E2E tests', () => {
         title: 'Test Pigs',
         source: 'Youtube',
         stream_id: 'test-stream-id',
+      })
+      .expect(201);
+  });
+
+  it('should update the existing verification if the user verifies another stream for the same track', async () => {
+    const timestamp = new Date().toISOString();
+    SupabaseMock.streamMappings.findByTrackAndAuthor(
+      new StreamMappingBuilder().build(),
+      'Test Sabbath',
+      'Test Pigs',
+      'Youtube',
+      'test-author-id',
+    );
+    SupabaseMock.streamMappings.updateById(
+      new StreamMappingBuilder().withStreamId('another-stream-id').build(),
+      'test-id',
+      timestamp,
+    );
+
+    await request(app.getHttpServer())
+      .post('/stream-mappings/verify')
+      .send({
+        author_id: 'test-author-id',
+        artist: 'Test Sabbath',
+        title: 'Test Pigs',
+        source: 'Youtube',
+        stream_id: 'another-stream-id',
       })
       .expect(201);
   });

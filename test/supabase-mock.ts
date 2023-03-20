@@ -66,6 +66,39 @@ export const SupabaseMock = {
           source: `eq.${source}`,
         })
         .reply(200, streamMappings),
+    findByTrackAndAuthor: (
+      streamMapping: StreamMapping | null,
+      artist: string,
+      title: string,
+      source: StreamMapping['source'],
+      author_id: string,
+    ) =>
+      nock(SupabaseUrl)
+        .get('/rest/v1/stream-mappings')
+        .query({
+          select: '*',
+          artist: `eq.${artist}`,
+          title: `eq.${title}`,
+          source: `eq.${source}`,
+          author_id: `eq.${author_id}`,
+        })
+        .reply(200, streamMapping ? [streamMapping] : []),
+    findByTrackAndAuthor404: (
+      artist: string,
+      title: string,
+      source: StreamMapping['source'],
+      author_id: string,
+    ) =>
+      nock(SupabaseUrl)
+        .get('/rest/v1/stream-mappings')
+        .query({
+          select: '*',
+          artist: `eq.${artist}`,
+          title: `eq.${title}`,
+          source: `eq.${source}`,
+          author_id: `eq.${author_id}`,
+        })
+        .reply(404),
     post: (
       createStreamMappingDto: CreateStreamMappingDto,
       id: string,
@@ -77,6 +110,25 @@ export const SupabaseMock = {
         )
         .query({
           columns: '"author_id","artist","title","source","stream_id"',
+        })
+        .reply(200, [
+          {
+            ...createStreamMappingDto,
+            id,
+            created_at,
+          },
+        ]),
+    updateById: (
+      createStreamMappingDto: CreateStreamMappingDto,
+      id: string,
+      created_at: string,
+    ) =>
+      nock(SupabaseUrl)
+        .patch('/rest/v1/stream-mappings', (body) =>
+          matches(body[0])(createStreamMappingDto),
+        )
+        .query({
+          id: `eq.${id}`,
         })
         .reply(200, [
           {
