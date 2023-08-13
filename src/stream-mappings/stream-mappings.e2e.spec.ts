@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import * as request from 'supertest';
+import request from 'supertest';
 import { StreamMappingBuilder, SupabaseMock } from 'test/supabase-mock';
 
 import { TestFixture } from 'test/test-fixture';

@@ -1,5 +1,5 @@
 import { matches } from 'lodash';
-import * as nock from 'nock';
+import nock from 'nock';
 import { CreateStreamMappingDto } from 'src/stream-mappings/dto/create-stream-mapping.dto';
 import { DeleteStreamMappingDto } from 'src/stream-mappings/dto/delete-stream-maping.dto';
 

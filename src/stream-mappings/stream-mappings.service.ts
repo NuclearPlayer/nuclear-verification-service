@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { groupBy, sortBy } from 'lodash';
+import NodeCache from 'node-cache';
 import { CreateStreamMappingDto } from './dto/create-stream-mapping.dto';
 import { DeleteStreamMappingDto } from './dto/delete-stream-maping.dto';
 
@@ -24,12 +25,15 @@ export type StreamIdWithScore = {
 @Injectable()
 export class StreamMappingsService {
   private client: SupabaseClient;
+  private cache: NodeCache;
 
   constructor() {
     this.client = new SupabaseClient(
       process.env.SUPABASE_URL ?? '',
       process.env.SUPABASE_KEY ?? '',
     );
+
+    this.cache = new NodeCache({ stdTTL: 60, checkperiod: 60 });
   }
 
   private async findAllByArtistTitleAndSource(
@@ -82,6 +86,13 @@ export class StreamMappingsService {
     source: 'Youtube',
     author_id?: string,
   ): Promise<StreamIdWithScore | null> {
+    const cacheKey = `${artist}:${title}:${source}:`;
+    const cachedStream: StreamIdWithScore | undefined =
+      this.cache.get(cacheKey);
+    if (cachedStream) {
+      return cachedStream;
+    }
+
     const streamMappings = await this.findAllByArtistTitleAndSource(
       artist,
       title,
@@ -105,8 +116,9 @@ export class StreamMappingsService {
       (streamMapping) => streamMapping.author_id === author_id,
     );
 
+    let topStream: StreamIdWithScore;
     if (verifiedByCurrentUser) {
-      return {
+      topStream = {
         ...(streamIdsWithScores.find(
           (streamIdWithScore) =>
             streamIdWithScore.stream_id === verifiedByCurrentUser.stream_id,
@@ -114,8 +126,11 @@ export class StreamMappingsService {
         self_verified: true,
       };
     } else {
-      return sortBy(streamIdsWithScores, 'score').reverse()[0];
+      topStream = sortBy(streamIdsWithScores, 'score').reverse()[0];
     }
+
+    this.cache.set(cacheKey, topStream);
+    return topStream;
   }
 
   async verifyTrack(
